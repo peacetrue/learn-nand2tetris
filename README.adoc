@@ -1,6 +1,6 @@
-= gradle 模板项目
+= 计算机系统要素
 xiayx <xiayouxue@hotmail.com>
-v1.0, 2019-08-23: SNAPSHOT
+v1.0, 2020-11-01: SNAPSHOT
 :doctype: docbook
 :toc: left
 :numbered:
@@ -10,4 +10,15 @@ v1.0, 2019-08-23: SNAPSHOT
 :testsourcedir: src/test/java
 :source-highlighter: highlightjs
 
-详情参考 https://peacetrue.cn/summarize/peacetrue-template-gradle/index.html[安宁的博客^]。
+详情参考 https://peacetrue.cn/summarize/learn-nand2tetris/index.html[安宁的博客^]。
+
+== 关于 label 的处理逻辑
+
+从上到下命令逐行翻译过程中，记录每条命令的行号 n， 以及途径的 label 数 b，label 为虚拟命令，不占行数，n-b
+
+== 预编译
+
+程序代码是顺序执行的，前面定义的方法，在调用后面方法时，无法预先知道后面方法的相关信息。所以需要针对方法进行预编译，事先得知所有的方法信息，预编译完后再次编译。
+
+
+凡是前面的内容访问了后面尚未出现内容，都需要做预编译。包括 方法调用、label 跳转。

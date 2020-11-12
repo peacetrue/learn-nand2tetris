@@ -43,6 +43,8 @@ allprojects { project ->
         compileOnly "org.projectlombok:lombok"
         annotationProcessor "org.projectlombok:lombok"
         implementation "com.google.code.findbugs:jsr305"
+        implementation 'org.antlr:antlr4-runtime:4.8-1'
+        implementation 'org.apache.commons:commons-lang3:3+'
 
         testImplementation 'org.junit.jupiter:junit-jupiter-api'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'

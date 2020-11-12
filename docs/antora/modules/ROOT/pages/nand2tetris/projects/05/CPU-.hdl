@@ -1,0 +1,75 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Hack CPU (Central Processing unit), consisting of an ALU,
+ * two registers named A and D, and a program counter named PC.
+ * The CPU is designed to fetch and execute instructions written in
+ * the Hack machine language. In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input
+ * holds the value of this location. If the current instruction needs
+ * to write a value to M, the value is placed in outM, the address
+ * of the target location is placed in the addressM output, and the
+ * writeM control bit is asserted. (When writeM==0, any value may
+ * appear in outM). The outM and writeM outputs are combinational:
+ * they are affected instantaneously by the execution of the current
+ * instruction. The addressM and pc outputs are clocked: although they
+ * are affected by the execution of the current instruction, they commit
+ * to their new values only in the next time step. If reset==1 then the
+ * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather
+ * than to the address resulting from executing the current instruction.
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M?
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    // Put your code here:
+    //指令类别判断：if(instruction[15]==0) then A else C
+    //isC=instruction[15]
+    //isA=not(in=instruction[15],out=isA);
+    //A指令构成:instruction[15],instruction[0..14]
+    //C指令构成:instruction[15],instruction[13..14],instruction[12],instruction[6..11],instruction[3..5],instruction[0..2]
+
+    //A指令将地址保存到A寄存器，否则维持A寄存器内容不变
+    Mux16(sel=instruction[15],a=instruction[0..14],b=feedback,out=A,out=addressM);
+    //C指令a-位域为0选A寄存器，1选inM
+    Mux16(sel=instruction[12],a=A,b=inM,out=AorM);
+    //通过指令控制ALU参数
+    ALU(x=D,y=AorM,zx=instruction[6],nx=instruction[7],zy=instruction[8],ny=instruction[9],f=instruction[10],no=instruction[11],out=outM,out=D,out=feedback,zr=zr,ng=ng);
+
+    //C指令并且dest含M
+    And(a=instruction[15],b=instruction[3],out=writeM);
+
+    //如果指令中没有jump或者jump条件失效，则load=0,inc=1，否则load=1,inc=0,A=jump地址
+    Or16Way(in=feedback,out=feedbackNeZero);
+    Not(in=feedbackNeZero,out=feedbackEqZero);
+    Not(in=feedback[15],out=feedbackGeZero);
+    And(a=feedbackGeZero,b=feedbackNeZero,out=feedbackGtZero);
+    //j1=1 并且 feedback>0 , jump01=1
+    And(a=instruction[0],b=feedbackGtZero,out=jump01);
+    //j2=1 并且 feedback=0 , jump02=1
+    And(a=instruction[1],b=feedbackEqZero,out=jump02);
+    //j2=2 并且 feedback<0 , jump03=1
+    And(a=instruction[2],b=feedback[15],out=jump03);
+    //jump01 or jump02 or jump03
+    Or(a=jump01,b=jump02,out=jump04);
+    Or(a=jump04,b=jump03,out=jump05,out=jumpLoad);
+    Not(in=jump05,out=jumpInc);
+    PC(in=A,load=jumpLoad,inc=jumpInc,reset=reset,out=pc);
+}

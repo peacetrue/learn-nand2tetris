@@ -30,3 +30,4 @@ hs_err_pid*
 */build
 
 .gradle
+docs/antora/modules/ROOT/pages/nand2tetris/tools
